@@ -18,19 +18,21 @@ import android.graphics.Bitmap;
  */
 public class AsciiConverter {
 
-    static final boolean DEBUG = false;
+    static final boolean DEBUG = true;
 
     public static enum ColorType {
     	// First character is dark, so BLACK_ON_WHITE is reversed.
-        WHITE_ON_BLACK(" .:oO8#"),
+        // Fixed character sets with proper brightness gradients
+        WHITE_ON_BLACK(" .:-=+*#%@"),
 
-        BLACK_ON_WHITE("#o:..  "),
+        BLACK_ON_WHITE("@%#*+=-:. "),
 
         // primary colors and combinations (red/green/blue/cyan/magenta/yellow/white)
-        ANSI_COLOR(" .:oO8#"),
+        // Proper brightness gradient from dark to light
+        ANSI_COLOR(" .'`^\",:;Il!i><~+_-?][}{1)(|\\/tfjrxnuvczXYUJCLQ0OZmwqpdbkhao*#MW&8%B@$"),
 
-        // all colors
-        FULL_COLOR("O8#");
+        // all colors - comprehensive character set
+        FULL_COLOR(" .'`^\",:;Il!i><~+_-?][}{1)(|\\/tfjrxnuvczXYUJCLQ0OZmwqpdbkhao*#MW&8%B@$");
 
         String[] pixelChars;
 
@@ -49,7 +51,9 @@ public class AsciiConverter {
 
     public static enum Orientation {
         NORMAL,
+        ROTATED_90,
         ROTATED_180,
+        ROTATED_270,
     }
 
     /** Holds the result of computing ASCII output from the input camera data.
@@ -105,13 +109,107 @@ public class AsciiConverter {
             }
         }
 
+        private void rotateImage90Degrees() {
+            // Rotate 90 degrees clockwise: transpose and reverse each row
+            int[] newAsciiIndexes = new int[asciiIndexes.length];
+            int[] newAsciiColors = asciiColors != null ? new int[asciiColors.length] : null;
+            
+            for (int row = 0; row < rows; row++) {
+                for (int col = 0; col < columns; col++) {
+                    int oldIndex = row * columns + col;
+                    int newRow = col;
+                    int newCol = rows - 1 - row;
+                    int newIndex = newRow * rows + newCol;
+                    
+                    newAsciiIndexes[newIndex] = asciiIndexes[oldIndex];
+                    if (newAsciiColors != null) {
+                        newAsciiColors[newIndex] = asciiColors[oldIndex];
+                    }
+                }
+            }
+            
+            asciiIndexes = newAsciiIndexes;
+            if (asciiColors != null) {
+                asciiColors = newAsciiColors;
+            }
+            
+            // Swap rows and columns
+            int temp = rows;
+            rows = columns;
+            columns = temp;
+        }
+
+        private void rotateImage270Degrees() {
+            // Rotate 270 degrees clockwise (or 90 degrees counter-clockwise)
+            int[] newAsciiIndexes = new int[asciiIndexes.length];
+            int[] newAsciiColors = asciiColors != null ? new int[asciiColors.length] : null;
+            
+            for (int row = 0; row < rows; row++) {
+                for (int col = 0; col < columns; col++) {
+                    int oldIndex = row * columns + col;
+                    int newRow = columns - 1 - col;
+                    int newCol = row;
+                    int newIndex = newRow * rows + newCol;
+                    
+                    newAsciiIndexes[newIndex] = asciiIndexes[oldIndex];
+                    if (newAsciiColors != null) {
+                        newAsciiColors[newIndex] = asciiColors[oldIndex];
+                    }
+                }
+            }
+            
+            asciiIndexes = newAsciiIndexes;
+            if (asciiColors != null) {
+                asciiColors = newAsciiColors;
+            }
+            
+            // Swap rows and columns
+            int temp = rows;
+            rows = columns;
+            columns = temp;
+        }
+
+        private void mirrorImageHorizontally() {
+            // Mirror the image horizontally by reversing each row
+            for (int row = 0; row < rows; row++) {
+                for (int col = 0; col < columns / 2; col++) {
+                    int leftIndex = row * columns + col;
+                    int rightIndex = row * columns + (columns - 1 - col);
+                    
+                    // Swap ASCII indexes
+                    int tmp = asciiIndexes[leftIndex];
+                    asciiIndexes[leftIndex] = asciiIndexes[rightIndex];
+                    asciiIndexes[rightIndex] = tmp;
+                    
+                    // Swap colors if present
+                    if (asciiColors != null) {
+                        tmp = asciiColors[leftIndex];
+                        asciiColors[leftIndex] = asciiColors[rightIndex];
+                        asciiColors[rightIndex] = tmp;
+                    }
+                }
+            }
+        }
+
         public void adjustForOrientation(Orientation orientation) {
             switch (orientation) {
+                case ROTATED_90:
+                    rotateImage90Degrees();
+                    break;
                 case ROTATED_180:
                     rotateImage180Degrees();
                     break;
+                case ROTATED_270:
+                    rotateImage270Degrees();
+                    break;
                 default:
                     break;
+            }
+        }
+        
+        public void adjustForFrontCamera(boolean isFrontCamera) {
+            if (isFrontCamera) {
+                mirrorImageHorizontally();
             }
         }
 
@@ -144,8 +242,12 @@ public class AsciiConverter {
         try {
             System.loadLibrary("asciiart");
             nativeCodeAvailable = true;
+            android.util.Log.d("AsciiConverter", "Native library loaded successfully");
         }
-        catch(Throwable ignored) {}
+        catch(Throwable ex) {
+            android.util.Log.e("AsciiConverter", "Failed to load native library: " + ex.getMessage());
+            nativeCodeAvailable = false;
+        }
     }
 
     /** Image processing can be broken up into multiple workers, with each worker computing a portion of
@@ -228,6 +330,19 @@ public class AsciiConverter {
             Result result) {
         long t1 = System.nanoTime();
         result.debugInfo = null;
+        
+        // Debug logging for Android troubleshooting
+        android.util.Log.d("AsciiConverter", "Starting conversion - data length: " + (data != null ? data.length : "null") + 
+                ", imageSize: " + imageWidth + "x" + imageHeight + 
+                ", asciiSize: " + asciiRows + "x" + asciiCols + 
+                ", colorType: " + colorType + 
+                ", nativeAvailable: " + nativeCodeAvailable);
+        
+        if (data == null) {
+            android.util.Log.e("AsciiConverter", "Camera data is null!");
+            return;
+        }
+        
         if (threadPool==null) {
             initThreadPool(0);
         }
@@ -335,7 +450,18 @@ public class AsciiConverter {
                         }
                     }
                     int averageBright = totalBright / samples;
-                    result.asciiIndexes[asciiIndex] = (averageBright * pixelChars.length) / 256;
+                    // Fix brightness to character mapping - ensure proper distribution
+                    int charIndex = (averageBright * (pixelChars.length - 1)) / 255;
+                    // Ensure index is within bounds
+                    if (charIndex >= pixelChars.length) charIndex = pixelChars.length - 1;
+                    if (charIndex < 0) charIndex = 0;
+                    result.asciiIndexes[asciiIndex] = charIndex;
+                    
+                    if (DEBUG && asciiIndex < 20) {
+                        android.util.Log.d("AsciiConverter", "Color conversion [" + asciiIndex + "] - bright: " + averageBright + 
+                                ", charIndex: " + charIndex + "/" + pixelChars.length + 
+                                ", char: '" + pixelChars[charIndex] + "', samples: " + samples);
+                    }
                     int averageRed = totalRed / samples;
                     int averageGreen = totalGreen / samples;
                     int averageBlue = totalBlue / samples;
@@ -387,7 +513,18 @@ public class AsciiConverter {
                         }
                     }
                     int averageBright = totalBright / samples;
-                    result.asciiIndexes[asciiIndex++] = (averageBright * pixelChars.length) / 256;
+                    // Fix brightness to character mapping for monochrome - ensure proper distribution
+                    int charIndex = (averageBright * (pixelChars.length - 1)) / 255;
+                    // Ensure index is within bounds
+                    if (charIndex >= pixelChars.length) charIndex = pixelChars.length - 1;
+                    if (charIndex < 0) charIndex = 0;
+                    result.asciiIndexes[asciiIndex++] = charIndex;
+                    
+                    if (DEBUG && asciiIndex <= 10) {
+                        android.util.Log.d("AsciiConverter", "BW conversion - bright: " + averageBright + 
+                                ", charIndex: " + charIndex + "/" + pixelChars.length + 
+                                ", char: '" + pixelChars[charIndex] + "', samples: " + samples);
+                    }
                 }
             }
         }

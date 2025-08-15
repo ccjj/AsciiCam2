@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="36dp"
+    android:height="36dp"
+    android:viewportWidth="36"
+    android:viewportHeight="36">
+    
+    <!-- Background removed for transparency -->
+    
+    <!-- Folder main body -->
+    <path
+        android:fillColor="#00000000"
+        android:strokeColor="#FFFFFF"
+        android:strokeWidth="2"
+        android:pathData="M6,12L30,12L30,28L6,28Z"/>
+    
+    <!-- Folder tab -->
+    <path
+        android:fillColor="#00000000"
+        android:strokeColor="#FFFFFF"
+        android:strokeWidth="2"
+        android:pathData="M6,8L18,8L20,12L6,12Z"/>
+    
+    <!-- Handle/grip -->
+    <path
+        android:fillColor="#00000000"
+        android:strokeColor="#FFFFFF"
+        android:strokeWidth="1.5"
+        android:pathData="M24,16L28,16"/>
+    
+    <path
+        android:fillColor="#00000000"
+        android:strokeColor="#FFFFFF"
+        android:strokeWidth="1.5"
+        android:pathData="M24,20L28,20"/>
+    
+    <!-- SAVED text area (simplified as lines) -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M10,18L14,18L14,19L10,19Z"/>
+    
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M10,21L16,21L16,22L10,22Z"/>
+    
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M10,24L15,24L15,25L10,25Z"/>
+    
+</vector>

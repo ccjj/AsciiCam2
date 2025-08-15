@@ -15,7 +15,7 @@ import android.graphics.Paint;
  */
 public class AsciiRenderer {
 
-    private static final boolean DEBUG = false;
+    private static final boolean DEBUG = true;
 
     Paint paint = new Paint();
 
@@ -143,21 +143,56 @@ public class AsciiRenderer {
     }
 
     public void setCameraImageSize(int width, int height) {
-        float cameraRatio = ((float)width) / height;
-        float viewRatio = ((float)this.maxWidth) / this.maxHeight;
-        if (cameraRatio < viewRatio) {
-            // camera preview is narrower than view, scale to full height
-            this.outputImageHeight = this.maxHeight;
-            this.outputImageWidth = (int)(this.outputImageHeight * cameraRatio);
+        // Always use full screen width for better centering
+        // This ensures the ASCII art spans the entire width of the screen
+        this.outputImageWidth = this.maxWidth;
+        this.outputImageHeight = this.maxHeight;
+        
+        // Get screen density for adaptive scaling
+        android.util.DisplayMetrics metrics = android.content.res.Resources.getSystem().getDisplayMetrics();
+        float density = metrics.density;
+        int densityDpi = metrics.densityDpi;
+        
+        // Calculate density-aware text size for different screen sizes
+        // Adjust target columns based on screen density and size
+        int baseTargetColumns;
+        if (densityDpi <= 160) { // LDPI
+            baseTargetColumns = 25;
+        } else if (densityDpi <= 240) { // MDPI
+            baseTargetColumns = 30;
+        } else if (densityDpi <= 320) { // HDPI
+            baseTargetColumns = 35;
+        } else if (densityDpi <= 480) { // XHDPI
+            baseTargetColumns = 40;
+        } else if (densityDpi <= 640) { // XXHDPI
+            baseTargetColumns = 45;
+        } else { // XXXHDPI and above
+            baseTargetColumns = 50;
         }
-        else {
-            this.outputImageWidth = this.maxWidth;
-            this.outputImageHeight = (int)(this.maxWidth / cameraRatio);
+        
+        // Adjust for screen aspect ratio - wider screens can fit more columns
+        float aspectRatio = (float) outputImageWidth / outputImageHeight;
+        if (aspectRatio > 1.8f) { // Very wide screens (18:9 or wider)
+            baseTargetColumns = (int) (baseTargetColumns * 1.1f);
+        } else if (aspectRatio < 1.5f) { // Square-ish screens
+            baseTargetColumns = (int) (baseTargetColumns * 0.9f);
         }
-        // Scale 10 point text per 1000px width. Char width is 70% of text size and height is 90%.
-        textSize = (int) Math.round(Math.max(10, outputImageWidth / 100.0));
-        charPixelWidth = (int) (textSize * 0.7);
-        charPixelHeight = (int) (textSize * 0.9);
+        
+        // Ensure reasonable bounds
+        int targetColumns = Math.min(60, Math.max(25, baseTargetColumns));
+        
+        // Calculate text size with density scaling
+        int baseTextSize = outputImageWidth / targetColumns;
+        textSize = Math.max((int)(16 * density), baseTextSize);
+        
+        // Adjust character dimensions for better readability
+        charPixelWidth = (int) (textSize * 0.65);
+        charPixelHeight = (int) (textSize * 1.1);
+        
+        android.util.Log.d("AsciiRenderer", "Screen: " + outputImageWidth + "x" + outputImageHeight + 
+                ", density: " + density + " (" + densityDpi + "dpi), aspectRatio: " + String.format("%.2f", aspectRatio) +
+                ", textSize: " + textSize + ", charSize: " + charPixelWidth + "x" + charPixelHeight + 
+                ", targetColumns: " + targetColumns);
     }
 
     public int getOutputImageWidth() {
@@ -299,15 +334,41 @@ public class AsciiRenderer {
             byte[] charsBitmap, int backgroundColor, int charWidth, int charHeight, int numChars) {
         int offset = 0;
         int pixelsPerRow = numValues * charWidth;
+        
+        if (DEBUG && charsBitmap != null) {
+            android.util.Log.d("AsciiRenderer", "fillPixelsInRow - charsBitmap.length: " + charsBitmap.length + 
+                    ", pixelsPerRow: " + pixelsPerRow + ", charWidth: " + charWidth + ", charHeight: " + charHeight + 
+                    ", numChars: " + numChars + ", numValues: " + numValues);
+        }
+        
         // For each row of pixels:
         for (int y=0; y<charHeight; y++) {
             // For each character to draw:
             for (int charPosition=0; charPosition<numChars; charPosition++) {
                 int charValue = asciiValues[charPosition];
                 int charColor = colorValues[charPosition];
+                
+                // Bounds check for charValue
+                if (charValue < 0 || charValue >= numValues) {
+                    if (DEBUG) {
+                        android.util.Log.w("AsciiRenderer", "Invalid charValue: " + charValue + ", numValues: " + numValues);
+                    }
+                    charValue = Math.max(0, Math.min(charValue, numValues - 1));
+                }
+                
                 // Index into the chars bitmap, going "down" the number of rows,
                 // and "across" the amount of character widths given by the index.
                 int charBitmapOffset = y*pixelsPerRow + charValue*charWidth;
+                
+                // Bounds check for charBitmapOffset
+                if (charBitmapOffset + charWidth > charsBitmap.length) {
+                    if (DEBUG) {
+                        android.util.Log.w("AsciiRenderer", "charBitmapOffset out of bounds: " + charBitmapOffset + 
+                                " + " + charWidth + " > " + charsBitmap.length);
+                    }
+                    break;
+                }
+                
                 for (int i=0; i<charWidth; i++) {
                     byte bitmapValue = charsBitmap[charBitmapOffset++];
                     rowPixels[offset++] = (bitmapValue!=0) ? charColor : backgroundColor;
@@ -322,14 +383,39 @@ public class AsciiRenderer {
             byte[] charsBitmap, int backgroundColor, int charWidth, int charHeight, int numChars);
 
     public Bitmap createBitmap(AsciiConverter.Result result) {
+        if (DEBUG) {
+            android.util.Log.d("AsciiRenderer", "createBitmap called - result: " + (result != null) + 
+                    ", outputImageWidth: " + outputImageWidth + ", outputImageHeight: " + outputImageHeight);
+            if (result != null) {
+                android.util.Log.d("AsciiRenderer", "result - rows: " + result.rows + ", columns: " + result.columns + 
+                        ", pixelChars: " + (result.pixelChars != null ? result.pixelChars.length : "null"));
+            }
+        }
+        
         int nextIndex = (activeBitmapIndex + 1) % bitmaps.length;
         if (bitmaps[nextIndex]==null ||
                 bitmaps[nextIndex].getWidth()!=outputImageWidth ||
                 bitmaps[nextIndex].getHeight()!=outputImageHeight) {
             bitmaps[nextIndex] = Bitmap.createBitmap(outputImageWidth, outputImageHeight, Bitmap.Config.ARGB_8888);
+            if (DEBUG) {
+                android.util.Log.d("AsciiRenderer", "Created new bitmap: " + outputImageWidth + "x" + outputImageHeight);
+            }
         }
+        
+        if (result == null) {
+            if (DEBUG) {
+                android.util.Log.w("AsciiRenderer", "Result is null, returning empty bitmap");
+            }
+            return bitmaps[nextIndex];
+        }
+        
         drawIntoBitmap(result, bitmaps[nextIndex]);
         activeBitmapIndex = nextIndex;
+        
+        if (DEBUG) {
+            android.util.Log.d("AsciiRenderer", "Bitmap created successfully, activeBitmapIndex: " + activeBitmapIndex);
+        }
+        
         return bitmaps[activeBitmapIndex];
     }
 

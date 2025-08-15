@@ -5,9 +5,12 @@ package com.dozingcatsoftware.util;
 import java.lang.reflect.Method;
 import java.util.Collections;
 import java.util.List;
+import java.util.ArrayList;
 
 import android.graphics.Bitmap;
 import android.hardware.Camera;
+import android.os.Build;
+import android.util.Log;
 
 /**
  * This class contains useful methods for working with the camera in Android apps. The methods will build and run
@@ -16,17 +19,44 @@ import android.hardware.Camera;
 
 public class CameraUtils {
 
+    private static final String TAG = "CameraUtils";
+    
     /** Returns the number of cameras accessible to the Android API. This is always 1 on platforms earlier than Android 2.3,
      * and on 2.3 or later it is the result of Camera.getNumberOfCameras().
+     * Enhanced with device-specific compatibility fixes.
      */
     public static int numberOfCameras() {
         try {
             Method m = Camera.class.getMethod("getNumberOfCameras");
-            return ((Number)m.invoke(null)).intValue();
+            int count = ((Number)m.invoke(null)).intValue();
+            
+            // Device-specific fixes for camera count issues
+            if (isProblematicDevice() && count == 0) {
+                Log.w(TAG, "Detected problematic device with 0 cameras reported, assuming 1");
+                return 1;
+            }
+            
+            return count;
         }
         catch(Exception ex) {
+            Log.w(TAG, "Error getting camera count, defaulting to 1", ex);
             return 1;
         }
+    }
+    
+    /** Checks if the current device is known to have camera-related issues */
+    private static boolean isProblematicDevice() {
+        String manufacturer = Build.MANUFACTURER.toLowerCase();
+        String model = Build.MODEL.toLowerCase();
+        
+        // Known problematic devices/manufacturers
+        return manufacturer.contains("xiaomi") ||
+               manufacturer.contains("oppo") ||
+               manufacturer.contains("vivo") ||
+               manufacturer.contains("realme") ||
+               manufacturer.contains("oneplus") ||
+               model.contains("poco") ||
+               model.contains("redmi");
     }
 
     /** Returns a list of available camera preview sizes, or null if the Android API to get the sizes is not available.
@@ -45,22 +75,71 @@ public class CameraUtils {
     /** Attempts to find the camera preview size as close as possible to the given width and height. If the Android API
      * does not support retrieving available camera preview sizes, this method returns null. Otherwise, returns the
      * camera preview size that minimizes the sum of the differences between the actual and requested height and width.
+     * Enhanced with device-specific compatibility and aspect ratio considerations.
      */
     public static Camera.Size bestCameraSizeForWidthAndHeight(Camera.Parameters params, int width, int height) {
         List<Camera.Size> previewSizes = previewSizesForCameraParameters(params);
-        if (previewSizes==null || previewSizes.size()==0) return null;
+        if (previewSizes==null || previewSizes.size()==0) {
+            Log.w(TAG, "No preview sizes available");
+            return null;
+        }
 
+        // Filter out problematic sizes for specific devices
+        previewSizes = filterProblematicSizes(previewSizes);
+        
         Camera.Size bestSize = null;
-        int bestDiff = 0;
-        // find the preview size that minimizes the difference between width and height
+        int bestDiff = Integer.MAX_VALUE;
+        double targetAspectRatio = (double) width / height;
+        
+        // Prioritize sizes with similar aspect ratios for better compatibility
         for(Camera.Size size : previewSizes) {
-            int diff = Math.abs(size.width - width) + Math.abs(size.height - height);
-            if (bestSize==null || diff<bestDiff) {
+            double aspectRatio = (double) size.width / size.height;
+            double aspectDiff = Math.abs(aspectRatio - targetAspectRatio);
+            
+            // Penalize sizes with very different aspect ratios
+            int sizeDiff = Math.abs(size.width - width) + Math.abs(size.height - height);
+            int totalDiff = sizeDiff + (int)(aspectDiff * 1000); // Weight aspect ratio difference
+            
+            if (bestSize==null || totalDiff < bestDiff) {
                 bestSize = size;
-                bestDiff = diff;
+                bestDiff = totalDiff;
             }
         }
+        
+        if (bestSize != null) {
+            Log.d(TAG, "Selected preview size: " + bestSize.width + "x" + bestSize.height + 
+                      " for target: " + width + "x" + height);
+        }
+        
         return bestSize;
+    }
+    
+    /** Filters out preview sizes known to cause issues on specific devices */
+    private static List<Camera.Size> filterProblematicSizes(List<Camera.Size> sizes) {
+        if (!isProblematicDevice()) {
+            return sizes;
+        }
+        
+        List<Camera.Size> filteredSizes = new ArrayList<Camera.Size>();
+        for (Camera.Size size : sizes) {
+            // Skip extremely large sizes that may cause memory issues
+            if (size.width > 1920 || size.height > 1080) {
+                Log.d(TAG, "Filtering out large size: " + size.width + "x" + size.height);
+                continue;
+            }
+            
+            // Skip odd aspect ratios that may cause issues
+            double aspectRatio = (double) size.width / size.height;
+            if (aspectRatio < 0.5 || aspectRatio > 2.5) {
+                Log.d(TAG, "Filtering out odd aspect ratio: " + size.width + "x" + size.height);
+                continue;
+            }
+            
+            filteredSizes.add(size);
+        }
+        
+        // If we filtered out everything, return original list
+        return filteredSizes.isEmpty() ? sizes : filteredSizes;
     }
 
     /** Updates the Camera object's preview size to the nearest match for the given width and height.
@@ -127,26 +206,101 @@ public class CameraUtils {
         return bitmap;
     }
 
-    /** Opens the camera with the given ID. If the Android API doesn't support multiple cameras (i.e. prior to Android 2.3),
-     * always opens the primary camera.
+    /** Opens the camera with the given ID. Returns null if the camera is not available.
+     * Enhanced with device-specific retry logic and error handling.
      */
     public static Camera openCamera(int cameraId) {
-        if (cameraId>=0) {
-            Method openMethod = null;
+        Camera camera = null;
+        int maxRetries = isProblematicDevice() ? 3 : 1;
+        
+        for (int attempt = 0; attempt < maxRetries; attempt++) {
             try {
-                openMethod = Camera.class.getMethod("open", int.class);
+                if (attempt > 0) {
+                    // Add delay between retries for problematic devices
+                    Thread.sleep(200 + (attempt * 100));
+                    Log.d(TAG, "Camera open retry attempt " + (attempt + 1) + " for camera " + cameraId);
+                }
+                
+                if (cameraId >= 0) {
+                    Method openMethod = null;
+                    try {
+                        openMethod = Camera.class.getMethod("open", int.class);
+                    }
+                    catch(Exception ex) {
+                        openMethod = null;
+                    }
+                    if (openMethod!=null) {
+                        camera = (Camera)openMethod.invoke(null, cameraId);
+                    } else {
+                        camera = Camera.open();
+                    }
+                } else {
+                    camera = Camera.open();
+                }
+                
+                if (camera != null) {
+                    // Apply device-specific camera parameters
+                    applyCameraCompatibilityFixes(camera);
+                    Log.d(TAG, "Camera " + cameraId + " opened successfully on attempt " + (attempt + 1));
+                    break;
+                }
             }
             catch(Exception ex) {
-                openMethod = null;
-            }
-            if (openMethod!=null) {
-                try {
-                    return (Camera)openMethod.invoke(null, cameraId);
+                Log.w(TAG, "Camera open attempt " + (attempt + 1) + " failed for camera " + cameraId, ex);
+                if (camera != null) {
+                    try {
+                        camera.release();
+                    } catch (Exception releaseEx) {
+                        Log.w(TAG, "Error releasing camera after failed open", releaseEx);
+                    }
+                    camera = null;
                 }
-                catch(Exception ignored) {}
+                
+                // For the last attempt, don't continue
+                if (attempt == maxRetries - 1) {
+                    Log.e(TAG, "All camera open attempts failed for camera " + cameraId);
+                }
             }
         }
-        return Camera.open();
+        
+        return camera;
+    }
+    
+    /** Applies device-specific camera compatibility fixes */
+    private static void applyCameraCompatibilityFixes(Camera camera) {
+        if (!isProblematicDevice() || camera == null) {
+            return;
+        }
+        
+        try {
+            Camera.Parameters params = camera.getParameters();
+            
+            // Set conservative parameters for problematic devices
+            List<String> focusModes = params.getSupportedFocusModes();
+            if (focusModes != null && focusModes.contains(Camera.Parameters.FOCUS_MODE_CONTINUOUS_VIDEO)) {
+                params.setFocusMode(Camera.Parameters.FOCUS_MODE_CONTINUOUS_VIDEO);
+            } else if (focusModes != null && focusModes.contains(Camera.Parameters.FOCUS_MODE_AUTO)) {
+                params.setFocusMode(Camera.Parameters.FOCUS_MODE_AUTO);
+            }
+            
+            // Disable problematic features for stability
+            List<String> sceneModes = params.getSupportedSceneModes();
+            if (sceneModes != null && sceneModes.contains(Camera.Parameters.SCENE_MODE_AUTO)) {
+                params.setSceneMode(Camera.Parameters.SCENE_MODE_AUTO);
+            }
+            
+            // Set conservative white balance
+            List<String> wbModes = params.getSupportedWhiteBalance();
+            if (wbModes != null && wbModes.contains(Camera.Parameters.WHITE_BALANCE_AUTO)) {
+                params.setWhiteBalance(Camera.Parameters.WHITE_BALANCE_AUTO);
+            }
+            
+            camera.setParameters(params);
+            Log.d(TAG, "Applied compatibility fixes for device: " + Build.MANUFACTURER + " " + Build.MODEL);
+            
+        } catch (Exception ex) {
+            Log.w(TAG, "Error applying camera compatibility fixes", ex);
+        }
     }
 
     static Class<? extends byte[]> BYTE_ARRAY_CLASS = (new byte[0]).getClass();
@@ -176,19 +330,27 @@ public class CameraUtils {
     public static boolean createPreviewCallbackBuffers(Camera camera, int nbuffers) {
         if (addPreviewBufferMethod==null) return false;
 
-        Camera.Size previewSize = camera.getParameters().getPreviewSize();
-        // 12 bits per pixel for preview buffer (8 luminance bits, then average of 2 bits each for Cr and Cb)
-        int bufferSize = previewSize.width * previewSize.height * 3 / 2;
-        for(int i=0; i<nbuffers; i++) {
-            byte[] buffer = new byte[bufferSize];
-            try {
-                addPreviewBufferMethod.invoke(camera, buffer);
+        try {
+            Camera.Size previewSize = camera.getParameters().getPreviewSize();
+            // 12 bits per pixel for preview buffer (8 luminance bits, then average of 2 bits each for Cr and Cb)
+            int bufferSize = previewSize.width * previewSize.height * 3 / 2;
+            
+            Log.d(TAG, "Creating " + nbuffers + " preview buffers of size " + bufferSize);
+            
+            for(int i=0; i<nbuffers; i++) {
+                byte[] buffer = new byte[bufferSize];
+                try {
+                    addPreviewBufferMethod.invoke(camera, buffer);
+                }
+                catch(Exception ignored) {
+                    return false;
+                }
             }
-            catch(Exception ignored) {
-                return false;
-            }
+            return true;
+        } catch (Exception ex) {
+            Log.e(TAG, "Error creating preview callback buffers", ex);
+            return false;
         }
-        return true;
     }
 
     /** Attempts to add the given byte array as a camera preview callback buffer. If the Android API doesn't support preview buffers,

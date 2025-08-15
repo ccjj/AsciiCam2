@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="48dp"
+    android:height="48dp"
+    android:viewportWidth="48"
+    android:viewportHeight="48">
+    
+    <!-- Background removed for transparency -->
+    
+    <!-- Paw print design based on provided image -->
+    <!-- Top left pad -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M12,14C14.21,14 16,12.21 16,10C16,7.79 14.21,6 12,6C9.79,6 8,7.79 8,10C8,12.21 9.79,14 12,14Z"/>
+    
+    <!-- Top right pad -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M36,14C38.21,14 40,12.21 40,10C40,7.79 38.21,6 36,6C33.79,6 32,7.79 32,10C32,12.21 33.79,14 36,14Z"/>
+    
+    <!-- Left pad -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M8,24C10.21,24 12,22.21 12,20C12,17.79 10.21,16 8,16C5.79,16 4,17.79 4,20C4,22.21 5.79,24 8,24Z"/>
+    
+    <!-- Right pad -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M40,24C42.21,24 44,22.21 44,20C44,17.79 42.21,16 40,16C37.79,16 36,17.79 36,20C36,22.21 37.79,24 40,24Z"/>
+    
+    <!-- Center main pad -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M24,38C28.42,38 32,35.31 32,32C32,28.69 28.42,26 24,26C19.58,26 16,28.69 16,32C16,35.31 19.58,38 24,38Z"/>
+    
+    <!-- Bottom left pad -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M16,38C17.66,38 19,36.66 19,35C19,33.34 17.66,32 16,32C14.34,32 13,33.34 13,35C13,36.66 14.34,38 16,38Z"/>
+    
+    <!-- Bottom right pad -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M32,38C33.66,38 35,36.66 35,35C35,33.34 33.66,32 32,32C30.34,32 29,33.34 29,35C29,36.66 30.34,38 32,38Z"/>
+    
+</vector>

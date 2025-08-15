@@ -25,102 +25,77 @@
 
         <LinearLayout
             android:id="@+id/verticalButtonBar"
-            android:layout_width="wrap_content"
-            android:layout_height="fill_parent"
-            android:orientation="vertical"
-            android:paddingTop="5dp"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_gravity="bottom|center_horizontal"
+            android:gravity="center"
+            android:paddingBottom="4dp"
+            android:paddingLeft="10dp"
+            android:paddingRight="10dp"
+            android:background="#80000000"
             android:visibility="visible" >
-
-            <com.dozingcatsoftware.util.ShutterButton
-                android:id="@+id/shutterButton"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:background="#00000000"
-                android:clickable="true"
-                android:src="@drawable/btn_camera_shutter_holo" />
-
-            <View
-                android:layout_width="0dp"
-                android:layout_height="12dp" />
 
             <ImageButton
                 android:id="@+id/cycleColorButton"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:layout_margin="8dp"
                 android:background="#00000000"
                 android:onClick="onClick_cycleColorMode"
-                android:src="@drawable/btn_color_full_color" />
-
-            <View
-                android:layout_width="0dp"
-                android:layout_height="12dp" />
+                android:scaleType="fitCenter"
+                android:src="@drawable/ic_settings_black_36dp" />
 
             <ImageButton
                 android:id="@+id/settingsButton"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:layout_margin="8dp"
                 android:background="#00000000"
                 android:onClick="onClick_gotoPreferences"
-                android:src="@drawable/ic_settings_white_36dp" />
-
-            <View
-                android:layout_width="0dp"
-                android:layout_height="12dp" />
+                android:scaleType="fitCenter"
+                android:src="@drawable/ic_settings_new" />
 
             <ImageButton
                 android:id="@+id/galleryButton"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:layout_margin="8dp"
                 android:background="#00000000"
                 android:onClick="onClick_gotoGallery"
-                android:src="@drawable/ic_photo_library_white_36dp" />
+                android:scaleType="fitCenter"
+                android:src="@drawable/ic_photo_library_new" />
 
-            <View
-                android:layout_width="0dp"
-                android:layout_height="12dp" />
+            <com.dozingcatsoftware.util.ShutterButton
+                android:id="@+id/shutterButton"
+                android:layout_width="64dp"
+                android:layout_height="64dp"
+                android:layout_margin="12dp"
+                android:background="#00000000"
+                android:clickable="true"
+                android:scaleType="fitCenter"
+                android:src="@drawable/btn_camera_shutter_new" />
 
             <ImageButton
                 android:id="@+id/convertPictureButton"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:layout_margin="8dp"
                 android:background="#00000000"
                 android:onClick="onClick_convertPicture"
-                android:src="@drawable/convert" />
-
-            <View
-                android:layout_width="0dp"
-                android:layout_height="12dp" />
+                android:scaleType="fitCenter"
+                android:src="@drawable/ic_photo_library_black_36dp"
+                android:visibility="visible" />
 
             <ImageButton
-                android:id="@+id/switchCameraButton"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center"
+                android:id="@+id/helpButton"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:layout_margin="8dp"
                 android:background="#00000000"
-                android:onClick="onClick_switchCamera"
-                android:src="@drawable/ic_camera_rear_white_36dp" />
-
-            <LinearLayout
-                android:layout_width="fill_parent"
-                android:layout_height="fill_parent"
-                android:gravity="bottom"
-                android:orientation="vertical"
-                android:paddingBottom="5dp"
-                android:visibility="visible" >
-
-                <ImageButton
-                    android:id="@+id/helpButton"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="center"
-                    android:background="#00000000"
-                    android:onClick="onClick_gotoAbout"
-                    android:src="@drawable/ic_help_outline_white_36dp" />
-            </LinearLayout>
+                android:onClick="onClick_gotoAbout"
+                android:scaleType="fitCenter"
+                android:src="@drawable/ic_help_new" />
         </LinearLayout>
     </FrameLayout>
 

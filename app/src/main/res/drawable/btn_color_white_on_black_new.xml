@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="36dp"
+    android:height="36dp"
+    android:viewportWidth="36"
+    android:viewportHeight="36">
+    
+    <!-- Background -->
+    <path
+        android:fillColor="#000000"
+        android:pathData="M0,0L36,0L36,36L0,36Z"/>
+    
+    <!-- Circle with half white, half black -->
+    <path
+        android:fillColor="#00000000"
+        android:strokeColor="#FFFFFF"
+        android:strokeWidth="2"
+        android:pathData="M18,6C25.73,6 32,12.27 32,18C32,25.73 25.73,32 18,32C10.27,32 4,25.73 4,18C4,12.27 10.27,6 18,6Z"/>
+    
+    <!-- Left half (white) with proper clipping -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M18,8C24.63,8 30,13.37 30,18C30,24.63 24.63,30 18,30L18,8Z"/>
+    
+    <!-- Dividing line -->
+    <path
+        android:fillColor="#00000000"
+        android:strokeColor="#FFFFFF"
+        android:strokeWidth="1"
+        android:pathData="M18,8L18,30"/>
+    
+</vector>

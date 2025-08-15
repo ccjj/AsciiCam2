@@ -28,18 +28,26 @@ public class OverlayView extends View {
     }
 
     @Override protected void onDraw(Canvas canvas) {
-        if (bitmap==null) return;
-        int xoffset = (this.getWidth() - this.bitmap.getWidth()) / 2;
-        int yoffset = (this.getHeight() - this.bitmap.getHeight()) / 2;
+        // Always draw background to hide camera view
         canvas.drawColor(backgroundFillColor);
+        
+        // Only draw bitmap if available
+        if (bitmap == null) return;
+        
+        // Scale bitmap to fill entire screen (stretch to fit full vertical mode)
+        Matrix scaleMatrix = new Matrix();
+        float scaleX = (float)this.getWidth() / bitmap.getWidth();
+        float scaleY = (float)this.getHeight() / bitmap.getHeight();
+        
+        // Use full screen scaling - stretch to fill entire view
         if (flipHorizontal) {
-            flipHorizontalMatrix.setScale(-1,1);
-            flipHorizontalMatrix.postTranslate(bitmap.getWidth() + xoffset, yoffset);
-            canvas.drawBitmap(bitmap, flipHorizontalMatrix, null);
+            scaleMatrix.setScale(-scaleX, scaleY);
+            scaleMatrix.postTranslate(this.getWidth(), 0);
+        } else {
+            scaleMatrix.setScale(scaleX, scaleY);
         }
-        else {
-            canvas.drawBitmap(bitmap, xoffset, yoffset, null);
-        }
+        
+        canvas.drawBitmap(bitmap, scaleMatrix, null);
     }
 
     public Bitmap getBitmap() {

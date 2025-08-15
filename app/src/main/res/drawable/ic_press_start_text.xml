@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="64dp"
+    android:height="64dp"
+    android:viewportWidth="64"
+    android:viewportHeight="64">
+    
+    <!-- Outer ring -->
+    <path
+        android:fillColor="#00000000"
+        android:strokeColor="#FFFFFF"
+        android:strokeWidth="3"
+        android:pathData="M32,8C45.25,8 56,18.75 56,32C56,45.25 45.25,56 32,56C18.75,56 8,45.25 8,32C8,18.75 18.75,8 32,8Z"/>
+    
+    <!-- Inner shutter blades -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M32,16L40,24L32,32L24,24Z"/>
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M32,16L40,24L32,32L40,40Z"/>
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M32,16L24,24L32,32L24,40Z"/>
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M32,48L40,40L32,32L24,40Z"/>
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M48,32L40,24L32,32L40,40Z"/>
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M16,32L24,24L32,32L24,40Z"/>
+    
+    <!-- Center circle -->
+    <path
+        android:fillColor="#FF4444"
+        android:pathData="M32,26C35.31,26 38,28.69 38,32C38,35.31 35.31,38 32,38C28.69,38 26,35.31 26,32C26,28.69 28.69,26 32,26Z"/>
+</vector>

@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="36dp"
+    android:height="36dp"
+    android:viewportWidth="36"
+    android:viewportHeight="36">
+    
+    <!-- Background removed for transparency -->
+    
+    <!-- Outer circle -->
+    <path
+        android:fillColor="#00000000"
+        android:strokeColor="#FFFFFF"
+        android:strokeWidth="1.5"
+        android:pathData="M18,4C26.84,4 34,11.16 34,18C34,26.84 26.84,32 18,32C9.16,32 2,26.84 2,18C2,11.16 9.16,4 18,4Z"/>
+    
+    <!-- Question mark -->
+    <!-- Top curve of ? -->
+    <path
+        android:fillColor="#00000000"
+        android:strokeColor="#FFFFFF"
+        android:strokeWidth="1.5"
+        android:strokeLineCap="round"
+        android:pathData="M14,14C14,12 15.5,10 18,10C20.5,10 22,12 22,14C22,16 20,17 18,18"/>
+    
+    <!-- Vertical line of ? -->
+    <path
+        android:fillColor="#00000000"
+        android:strokeColor="#FFFFFF"
+        android:strokeWidth="1.5"
+        android:strokeLineCap="round"
+        android:pathData="M18,20L18,22"/>
+    
+    <!-- Question mark dot -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M18,24C19.1,24 20,24.9 20,26C20,27.1 19.1,28 18,28C16.9,28 16,27.1 16,26C16,24.9 16.9,24 18,24Z"/>
+    
+</vector>

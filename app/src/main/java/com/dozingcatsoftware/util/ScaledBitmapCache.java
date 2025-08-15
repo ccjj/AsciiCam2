@@ -11,7 +11,7 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Bitmap.CompressFormat;
 import android.net.Uri;
-import android.support.v4.util.LruCache;
+import androidx.collection.LruCache;
 
 /** This class implements a two-level cache for Bitmaps. The first level is an in-memory map
  * which uses an LruCache so that the Bitmaps will be freed when necessary. The second

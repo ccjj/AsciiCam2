@@ -1,65 +1,44 @@
 <?xml version="1.0" encoding="utf-8"?>
-<manifest xmlns:android="http://schemas.android.com/apk/res/android" android:installLocation="auto"
-    package="com.dozingcatsoftware.asciicam"
-    android:versionCode="16"
-    android:versionName="1.2.4" >
+<manifest package="com.dozingcatsoftware.asciicam" xmlns:android="http://schemas.android.com/apk/res/android">
+  <uses-permission android:name="android.permission.CAMERA"/>
+  <!-- Add INTERNET only if you stream/upload -->
+  <!-- <uses-permission android:name="android.permission.INTERNET"/> -->
+  <!-- Remove legacy storage perms if present:
+       READ_EXTERNAL_STORAGE / WRITE_EXTERNAL_STORAGE -->
 
-    <uses-permission android:name="android.permission.CAMERA"/>
-    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
-
-    <uses-feature
-        android:name="android.hardware.camera"
-        android:required="false" />
-
-    <application
-        android:hardwareAccelerated="false"
-        android:icon="@drawable/ic_launcher"
-        android:label="@string/app_name" android:theme="@style/Theme.ACTheme">
-        <activity
-            android:label="@string/app_name"
-            android:name=".AsciiCamActivity" android:screenOrientation="landscape" android:configChanges="keyboard|keyboardHidden">
-            <intent-filter >
-                <action android:name="android.intent.action.MAIN" />
-
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
-        </activity>
-        <activity android:name="LibraryActivity"></activity>
-        <activity android:name="ViewImageActivity" android:screenOrientation="landscape"></activity>
-        <activity android:name="AboutActivity"></activity>
-        <activity android:name="AsciiCamPreferences"></activity>
-        
-        <receiver android:name="com.dozingcatsoftware.asciicam.NewPictureReceiver" android:label="NewPictureReceiver"
-            android:enabled="false">
-           <intent-filter>
-                <action android:name="android.hardware.action.NEW_PICTURE" />
-                <data android:mimeType="image/*" />
-            </intent-filter>
-        </receiver>
-        
-        <receiver android:name="com.dozingcatsoftware.asciicam.NewPictureReceiverLegacyBroadcast" android:label="NewPictureReceiverLegacyBroadcast"
-            android:enabled="false">
-           <intent-filter>
-                <action android:name="com.android.camera.NEW_PICTURE" />
-                <data android:mimeType="image/*" />
-            </intent-filter>
-        </receiver>
-        
-        <service android:name=".NewPictureJob"
-                 android:permission="android.permission.BIND_JOB_SERVICE"
-                 android:exported="true" />
-
-        <provider
-            android:authorities="com.dozingcatsoftware.asciicam.fileprovider"
-            android:name="android.support.v4.content.FileProvider"
-            android:exported="false"
-            android:grantUriPermissions="true">
-            <meta-data
-                android:name="android.support.FILE_PROVIDER_PATHS"
-                android:resource="@xml/provider_paths" />
-        </provider>
-
-    </application>
+  <application
+    android:allowBackup="true"
+    android:label="@string/app_name"
+    android:icon="@drawable/ic_launcher_new"
+    android:theme="@style/Theme.ACTheme"
+    android:supportsRtl="true"
+    android:hardwareAccelerated="true"
+    android:largeHeap="true">
     
+    <activity android:name=".MainActivity" 
+      android:exported="true"
+      android:screenOrientation="unspecified"
+      android:theme="@android:style/Theme.NoTitleBar.Fullscreen"
+      android:configChanges="keyboard|keyboardHidden|orientation|screenSize">
+      <intent-filter>
+        <action android:name="android.intent.action.MAIN"/>
+        <category android:name="android.intent.category.LAUNCHER"/>
+      </intent-filter>
+    </activity>
+    
+    <activity android:name=".LibraryActivity" android:exported="false"/>
+    <activity android:name=".ViewImageActivity" android:screenOrientation="unspecified" android:exported="false"/>
+    <activity android:name=".AboutActivity" android:exported="false"/>
+    <activity android:name=".AsciiCamPreferences" android:exported="false"/>
+
+    <provider
+      android:name="androidx.core.content.FileProvider"
+      android:authorities="${applicationId}.fileprovider"
+      android:exported="false"
+      android:grantUriPermissions="true">
+      <meta-data
+        android:name="android.support.FILE_PROVIDER_PATHS"
+        android:resource="@xml/provider_paths"/>
+    </provider>
+  </application>
 </manifest>

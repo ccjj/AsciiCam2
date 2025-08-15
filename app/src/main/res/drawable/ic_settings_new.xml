@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="36dp"
+    android:height="36dp"
+    android:viewportWidth="36"
+    android:viewportHeight="36">
+    
+    <!-- Background removed for transparency -->
+    
+    <!-- Ship wheel outer ring -->
+    <path
+        android:fillColor="#00000000"
+        android:strokeColor="#FFFFFF"
+        android:strokeWidth="1.5"
+        android:pathData="M18,4C26.84,4 34,11.16 34,18C34,26.84 26.84,32 18,32C9.16,32 2,26.84 2,18C2,11.16 9.16,4 18,4Z"/>
+    
+    <!-- Inner circle -->
+    <path
+        android:fillColor="#00000000"
+        android:strokeColor="#FFFFFF"
+        android:strokeWidth="1.5"
+        android:pathData="M18,12C21.31,12 24,14.69 24,18C24,21.31 21.31,24 18,24C14.69,24 12,21.31 12,18C12,14.69 14.69,12 18,12Z"/>
+    
+    <!-- Spokes -->
+    <path
+        android:fillColor="#00000000"
+        android:strokeColor="#FFFFFF"
+        android:strokeWidth="1.5"
+        android:pathData="M18,4L18,12"/>
+    
+    <path
+        android:fillColor="#00000000"
+        android:strokeColor="#FFFFFF"
+        android:strokeWidth="1.5"
+        android:pathData="M18,24L18,32"/>
+    
+    <path
+        android:fillColor="#00000000"
+        android:strokeColor="#FFFFFF"
+        android:strokeWidth="1.5"
+        android:pathData="M4,18L12,18"/>
+    
+    <path
+        android:fillColor="#00000000"
+        android:strokeColor="#FFFFFF"
+        android:strokeWidth="1.5"
+        android:pathData="M24,18L32,18"/>
+    
+    <!-- Diagonal spokes -->
+    <path
+        android:fillColor="#00000000"
+        android:strokeColor="#FFFFFF"
+        android:strokeWidth="1.5"
+        android:pathData="M8.5,8.5L13.5,13.5"/>
+    
+    <path
+        android:fillColor="#00000000"
+        android:strokeColor="#FFFFFF"
+        android:strokeWidth="1.5"
+        android:pathData="M22.5,22.5L27.5,27.5"/>
+    
+    <path
+        android:fillColor="#00000000"
+        android:strokeColor="#FFFFFF"
+        android:strokeWidth="1.5"
+        android:pathData="M27.5,8.5L22.5,13.5"/>
+    
+    <path
+        android:fillColor="#00000000"
+        android:strokeColor="#FFFFFF"
+        android:strokeWidth="1.5"
+        android:pathData="M13.5,22.5L8.5,27.5"/>
+    
+    <!-- Center text area -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M16,16L20,16L20,20L16,20Z"/>
+    
+    <path
+        android:fillColor="#000000"
+        android:pathData="M17,17L19,17L19,19L17,19Z"/>
+    
+</vector>
