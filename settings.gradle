@@ -6,4 +6,46 @@ pluginManagement {
     }
 }
 
+maybeCreateLocalPropertiesWithDefaultAndroidSdk()
+
 include ':app'
+
+void maybeCreateLocalPropertiesWithDefaultAndroidSdk() {
+    File localPropertiesFile = file('local.properties')
+    Properties localProperties = new Properties()
+
+    if (localPropertiesFile.isFile()) {
+        localPropertiesFile.withInputStream { localProperties.load(it) }
+    }
+
+    if (localProperties.getProperty('sdk.dir') || System.getenv('ANDROID_HOME') || System.getenv('ANDROID_SDK_ROOT')) {
+        return
+    }
+
+    File sdkDir = defaultAndroidSdkCandidates().find { it.isDirectory() }
+    if (sdkDir == null) {
+        return
+    }
+
+    localProperties.setProperty('sdk.dir', sdkDir.absolutePath.replace('\\', '\\\\'))
+    localPropertiesFile.withOutputStream { localProperties.store(it, 'Auto-detected Android SDK location') }
+}
+
+List<File> defaultAndroidSdkCandidates() {
+    String userHome = System.getProperty('user.home')
+    String osName = System.getProperty('os.name').toLowerCase(Locale.ROOT)
+
+    List<File> candidates = [
+        new File(userHome, 'Android/Sdk'),
+        new File(userHome, 'Library/Android/sdk')
+    ]
+
+    if (osName.contains('windows')) {
+        String localAppData = System.getenv('LOCALAPPDATA')
+        if (localAppData) {
+            candidates.add(0, new File(localAppData, 'Android/Sdk'))
+        }
+    }
+
+    return candidates
+}

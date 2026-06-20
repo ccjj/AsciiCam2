@@ -4,28 +4,28 @@ plugins {
 }
 
 android {
-  namespace 'com.dozingcatsoftware.asciicam'
-  compileSdk 34
+  namespace = 'com.dozingcatsoftware.asciicam'
+  compileSdk = 34
 
   defaultConfig {
-    applicationId "com.dozingcatsoftware.asciicam"
-    minSdk 24
-    targetSdk 34
-    versionCode 1
-    versionName "1.0"
+    applicationId = "com.dozingcatsoftware.asciicam"
+    minSdk = 24
+    targetSdk = 34
+    versionCode = 1
+    versionName = "1.0"
   }
 
   buildTypes {
     release {
-      minifyEnabled true
+      minifyEnabled = true
       proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
     }
-    debug { minifyEnabled false }
+    debug { minifyEnabled = false }
   }
 
   compileOptions {
-    sourceCompatibility JavaVersion.VERSION_17
-    targetCompatibility JavaVersion.VERSION_17
+    sourceCompatibility = JavaVersion.VERSION_17
+    targetCompatibility = JavaVersion.VERSION_17
   }
 
   kotlinOptions {
