@@ -5,7 +5,9 @@
     android:viewportWidth="48"
     android:viewportHeight="48">
     
-    <!-- Background removed for transparency -->
+    <path
+        android:fillColor="#222222"
+        android:pathData="M24,2C36.15,2 46,11.85 46,24C46,36.15 36.15,46 24,46C11.85,46 2,36.15 2,24C2,11.85 11.85,2 24,2Z"/>
     
     <!-- Paw print design based on provided image -->
     <!-- Top left pad -->
