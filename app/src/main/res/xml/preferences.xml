@@ -10,6 +10,16 @@
         <EditTextPreference android:key="@string/fullColorPixelCharsPrefId" android:enabled="true" 
             android:title="@string/fullColorPixelCharsPrefTitle" android:dialogMessage="@string/fullColorPixelCharsPrefMessage" />
 
+        <ListPreference android:key="@string/colorTypePrefId" android:enabled="true"
+            android:title="@string/colorTypePrefTitle" android:summary="@string/colorTypePrefSummary"
+            android:entries="@array/colorTypePrefEntries" android:entryValues="@array/colorTypePrefValues"
+            android:defaultValue="ANSI_COLOR" />
+
+        <ListPreference android:key="@string/charSizePrefId" android:enabled="true"
+            android:title="@string/charSizePrefTitle" android:summary="@string/charSizePrefSummary"
+            android:entries="@array/charSizePrefEntries" android:entryValues="@array/charSizePrefValues"
+            android:defaultValue="100" />
+
         <CheckBoxPreference android:key="@string/autoConvertPicturesPrefId" android:enabled="true" 
             android:title="@string/autoConvertPicturesPrefTitle" />
         <CheckBoxPreference android:key="@string/controlsOnLeftPrefId" android:enabled="true"

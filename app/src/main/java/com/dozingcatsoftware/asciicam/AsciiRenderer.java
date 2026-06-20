@@ -22,6 +22,7 @@ public class AsciiRenderer {
     int charPixelHeight = 9;
     int charPixelWidth = 7;
     int textSize = 10;
+    int characterSizePercent = 100;
 
     // One element of this array holds the visible bitmap. The next image is drawn offscreen into
     // the other element, and then activeBitmapIndex is flipped to make it visible.
@@ -142,6 +143,10 @@ public class AsciiRenderer {
         this.maxHeight = maxHeight;
     }
 
+    public void setCharacterSizePercent(int percent) {
+        characterSizePercent = Math.max(50, Math.min(200, percent));
+    }
+
     public void setCameraImageSize(int width, int height) {
         // Always use full screen width for better centering
         // This ensures the ASCII art spans the entire width of the screen
@@ -181,18 +186,20 @@ public class AsciiRenderer {
         // Ensure reasonable bounds
         int targetColumns = Math.min(60, Math.max(25, baseTargetColumns));
         
-        // Calculate text size with density scaling
+        // Calculate text size with density scaling, then apply the user preference.
         int baseTextSize = outputImageWidth / targetColumns;
-        textSize = Math.max((int)(16 * density), baseTextSize);
+        int minimumTextSize = (int)(16 * density);
+        textSize = Math.max(minimumTextSize, baseTextSize);
+        textSize = Math.max(1, textSize * characterSizePercent / 100);
         
         // Adjust character dimensions for better readability
-        charPixelWidth = (int) (textSize * 0.65);
-        charPixelHeight = (int) (textSize * 1.1);
+        charPixelWidth = Math.max(1, (int) (textSize * 0.65));
+        charPixelHeight = Math.max(1, (int) (textSize * 1.1));
         
         android.util.Log.d("AsciiRenderer", "Screen: " + outputImageWidth + "x" + outputImageHeight + 
                 ", density: " + density + " (" + densityDpi + "dpi), aspectRatio: " + String.format("%.2f", aspectRatio) +
                 ", textSize: " + textSize + ", charSize: " + charPixelWidth + "x" + charPixelHeight + 
-                ", targetColumns: " + targetColumns);
+                ", targetColumns: " + targetColumns + ", characterSizePercent: " + characterSizePercent);
     }
 
     public int getOutputImageWidth() {
