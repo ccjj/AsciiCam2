@@ -2,6 +2,7 @@ package com.dozingcatsoftware.asciicam
 
 import android.Manifest
 import android.content.pm.PackageManager
+import android.content.Intent
 import android.os.Bundle
 import android.widget.Button
 import android.widget.Toast
@@ -21,6 +22,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var previewView: PreviewView
     private lateinit var asciiView: AsciiView
     private lateinit var btnToggle: Button
+    private lateinit var btnSettings: Button
     private lateinit var btnSave: Button
     private lateinit var cameraExecutor: ExecutorService
     
@@ -39,6 +41,7 @@ class MainActivity : AppCompatActivity() {
         previewView = findViewById(R.id.preview)
         asciiView = findViewById(R.id.asciiView)
         btnToggle = findViewById(R.id.btnToggle)
+        btnSettings = findViewById(R.id.btnSettings)
         btnSave = findViewById(R.id.btnSave)
         
         cameraExecutor = Executors.newSingleThreadExecutor()
@@ -55,6 +58,10 @@ class MainActivity : AppCompatActivity() {
             asciiView.visibility = if (isAsciiMode) android.view.View.VISIBLE else android.view.View.GONE
         }
         
+        btnSettings.setOnClickListener {
+            startActivity(Intent(this, AsciiCamPreferences::class.java))
+        }
+
         btnSave.setOnClickListener {
             captureAndSaveImage()
         }
