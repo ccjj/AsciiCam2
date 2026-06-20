@@ -24,6 +24,7 @@
 	<string name="galleryButtonLabel">Gallery</string>
 	<string name="aboutButtonLabel">About</string>
 	<string name="preferencesButtonLabel">Preferences</string>
+    <string name="settingsButtonDescription">Settings</string>
 	
 	<string name="pixelCharsPrefIdPrefix">pixelChars.</string>
 	
@@ -49,6 +50,42 @@
 
     <string name="autoConvertPicturesPrefId">autoConvertPictures</string>
     <string name="autoConvertPicturesPrefTitle">Automatically convert camera pictures</string>
+
+    <string name="colorTypePrefId">colorType</string>
+    <string name="colorTypePrefTitle">Color style</string>
+    <string name="colorTypePrefSummary">Choose whether ASCII characters are monochrome, ANSI colored, or full color.</string>
+
+    <string-array name="colorTypePrefEntries">
+        <item>White on black</item>
+        <item>Black on white</item>
+        <item>ANSI colors</item>
+        <item>Full color</item>
+    </string-array>
+
+    <string-array name="colorTypePrefValues">
+        <item>WHITE_ON_BLACK</item>
+        <item>BLACK_ON_WHITE</item>
+        <item>ANSI_COLOR</item>
+        <item>FULL_COLOR</item>
+    </string-array>
+
+    <string name="charSizePrefId">charSize</string>
+    <string name="charSizePrefTitle">Character size</string>
+    <string name="charSizePrefSummary">Adjust how large each ASCII character is in the live camera view and saved images.</string>
+
+    <string-array name="charSizePrefEntries">
+        <item>Small</item>
+        <item>Medium</item>
+        <item>Large</item>
+        <item>Extra large</item>
+    </string-array>
+
+    <string-array name="charSizePrefValues">
+        <item>75</item>
+        <item>100</item>
+        <item>125</item>
+        <item>150</item>
+    </string-array>
 
     <string name="controlsOnLeftPrefId">controlsOnLeft</string>
     <string name="controlsOnLeftPrefTitle">Controls on left</string>

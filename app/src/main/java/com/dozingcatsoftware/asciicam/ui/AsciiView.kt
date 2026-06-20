@@ -4,6 +4,7 @@ import android.content.Context
 import android.graphics.*
 import android.util.AttributeSet
 import android.view.View
+import com.dozingcatsoftware.asciicam.AsciiConverter
 import com.dozingcatsoftware.asciicam.camera.AsciiFrame
 
 class AsciiView @JvmOverloads constructor(
@@ -13,7 +14,7 @@ class AsciiView @JvmOverloads constructor(
     
     private val textPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
         color = Color.WHITE
-        textSize = 14f
+        textSize = DEFAULT_TEXT_SIZE
         typeface = Typeface.MONOSPACE
     }
     
@@ -23,33 +24,32 @@ class AsciiView @JvmOverloads constructor(
     
     @Volatile
     private var currentFrame: AsciiFrame? = null
+    private var colorType = AsciiConverter.ColorType.ANSI_COLOR
     
     fun setFrame(frame: AsciiFrame?) {
         currentFrame = frame
         postInvalidateOnAnimation()
     }
+
+    fun applyPreferences(colorType: AsciiConverter.ColorType, characterSizePercent: Int) {
+        this.colorType = colorType
+        textPaint.textSize = DEFAULT_TEXT_SIZE * characterSizePercent.coerceIn(50, 200) / 100f
+        when (colorType) {
+            AsciiConverter.ColorType.BLACK_ON_WHITE -> {
+                backgroundPaint.color = Color.WHITE
+                textPaint.color = Color.BLACK
+            }
+            else -> {
+                backgroundPaint.color = Color.BLACK
+                textPaint.color = Color.WHITE
+            }
+        }
+        postInvalidateOnAnimation()
+    }
     
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
-        
-        // Draw black background
-        canvas.drawRect(0f, 0f, width.toFloat(), height.toFloat(), backgroundPaint)
-        
-        val frame = currentFrame ?: return
-        
-        val charHeight = textPaint.fontMetrics.run { bottom - top }
-        val startY = -textPaint.fontMetrics.top
-        
-        var charIndex = 0
-        var currentY = startY
-        
-        for (row in 0 until frame.rows) {
-            canvas.drawText(frame.chars, charIndex, frame.cols, 0f, currentY, textPaint)
-            charIndex += frame.cols
-            currentY += charHeight
-            
-            if (currentY > height) break
-        }
+        drawAscii(canvas, width.toFloat(), height.toFloat())
     }
     
     fun getBitmap(): Bitmap? {
@@ -65,20 +65,44 @@ class AsciiView @JvmOverloads constructor(
         
         val bitmap = Bitmap.createBitmap(bitmapWidth, bitmapHeight, Bitmap.Config.ARGB_8888)
         val canvas = Canvas(bitmap)
-        
-        // Draw black background
-        canvas.drawRect(0f, 0f, bitmapWidth.toFloat(), bitmapHeight.toFloat(), backgroundPaint)
-        
-        val startY = -textPaint.fontMetrics.top
-        var charIndex = 0
-        var currentY = startY
-        
-        for (row in 0 until frame.rows) {
-            canvas.drawText(frame.chars, charIndex, frame.cols, 0f, currentY, textPaint)
-            charIndex += frame.cols
-            currentY += charHeight
-        }
+        drawAscii(canvas, bitmapWidth.toFloat(), bitmapHeight.toFloat())
         
         return bitmap
+    }
+
+    private fun drawAscii(canvas: Canvas, drawWidth: Float, drawHeight: Float) {
+        canvas.drawRect(0f, 0f, drawWidth, drawHeight, backgroundPaint)
+
+        val frame = currentFrame ?: return
+        val charHeight = textPaint.fontMetrics.run { bottom - top }
+        val startY = -textPaint.fontMetrics.top
+        val colors = frame.colors
+
+        var charIndex = 0
+        var currentY = startY
+
+        for (row in 0 until frame.rows) {
+            if (colors == null) {
+                textPaint.color = if (colorType == AsciiConverter.ColorType.BLACK_ON_WHITE) Color.BLACK else Color.WHITE
+                canvas.drawText(frame.chars, charIndex, frame.cols, 0f, currentY, textPaint)
+                charIndex += frame.cols
+            }
+            else {
+                var currentX = 0f
+                for (col in 0 until frame.cols) {
+                    textPaint.color = colors[charIndex]
+                    canvas.drawText(frame.chars, charIndex, 1, currentX, currentY, textPaint)
+                    currentX += textPaint.measureText(frame.chars, charIndex, 1)
+                    charIndex++
+                }
+            }
+            currentY += charHeight
+
+            if (currentY > drawHeight) break
+        }
+    }
+
+    companion object {
+        private const val DEFAULT_TEXT_SIZE = 14f
     }
 }

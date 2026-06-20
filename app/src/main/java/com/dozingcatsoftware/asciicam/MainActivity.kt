@@ -1,6 +1,7 @@
 package com.dozingcatsoftware.asciicam
 
 import android.Manifest
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Bundle
 import android.widget.Button
@@ -11,6 +12,7 @@ import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.view.PreviewView
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import android.preference.PreferenceManager
 import com.dozingcatsoftware.asciicam.camera.AsciiAnalyzer
 import com.dozingcatsoftware.asciicam.io.AsciiImageWriter
 import com.dozingcatsoftware.asciicam.ui.AsciiView
@@ -21,11 +23,15 @@ class MainActivity : AppCompatActivity() {
     private lateinit var previewView: PreviewView
     private lateinit var asciiView: AsciiView
     private lateinit var btnToggle: Button
+    private lateinit var btnSettings: Button
     private lateinit var btnSave: Button
     private lateinit var cameraExecutor: ExecutorService
     
     private var imageCapture: ImageCapture? = null
     private var isAsciiMode = true
+    private var currentColorType = AsciiConverter.ColorType.ANSI_COLOR
+    private var currentCharacterSizePercent = 100
+    private var currentPixelChars = ""
     
     companion object {
         private const val REQUEST_CODE_PERMISSIONS = 10
@@ -39,13 +45,13 @@ class MainActivity : AppCompatActivity() {
         previewView = findViewById(R.id.preview)
         asciiView = findViewById(R.id.asciiView)
         btnToggle = findViewById(R.id.btnToggle)
+        btnSettings = findViewById(R.id.btnSettings)
         btnSave = findViewById(R.id.btnSave)
         
         cameraExecutor = Executors.newSingleThreadExecutor()
+        applyAsciiPreferences()
         
-        if (allPermissionsGranted()) {
-            startCamera()
-        } else {
+        if (!allPermissionsGranted()) {
             ActivityCompat.requestPermissions(this, REQUIRED_PERMISSIONS, REQUEST_CODE_PERMISSIONS)
         }
         
@@ -55,11 +61,42 @@ class MainActivity : AppCompatActivity() {
             asciiView.visibility = if (isAsciiMode) android.view.View.VISIBLE else android.view.View.GONE
         }
         
+        btnSettings.setOnClickListener {
+            startActivity(Intent(this, AsciiCamPreferences::class.java))
+        }
+
         btnSave.setOnClickListener {
             captureAndSaveImage()
         }
     }
     
+    override fun onResume() {
+        super.onResume()
+        if (::asciiView.isInitialized) {
+            applyAsciiPreferences()
+            if (allPermissionsGranted()) {
+                startCamera()
+            }
+        }
+    }
+
+    private fun applyAsciiPreferences() {
+        val prefs = PreferenceManager.getDefaultSharedPreferences(this)
+        currentColorType = prefs.getString(getString(R.string.colorTypePrefId), null)
+            ?.let { runCatching { AsciiConverter.ColorType.valueOf(it) }.getOrNull() }
+            ?: AsciiConverter.ColorType.ANSI_COLOR
+        currentCharacterSizePercent = prefs.getString(getString(R.string.charSizePrefId), "100")
+            ?.toIntOrNull()
+            ?.coerceIn(50, 200)
+            ?: 100
+        currentPixelChars = prefs.getString(
+            getString(R.string.pixelCharsPrefIdPrefix) + currentColorType.name,
+            ""
+        ).orEmpty().ifBlank { currentColorType.defaultPixelChars.joinToString("") }
+
+        asciiView.applyPreferences(currentColorType, currentCharacterSizePercent)
+    }
+
     private fun startCamera() {
         val cameraProviderFuture = ProcessCameraProvider.getInstance(this)
         
@@ -76,7 +113,11 @@ class MainActivity : AppCompatActivity() {
                 .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
                 .build()
                 .also {
-                    it.setAnalyzer(cameraExecutor, AsciiAnalyzer { frame ->
+                    it.setAnalyzer(cameraExecutor, AsciiAnalyzer(
+                        targetCols = (10000 / currentCharacterSizePercent).coerceIn(40, 160),
+                        colorType = currentColorType,
+                        asciiRamp = currentPixelChars
+                    ) { frame ->
                         runOnUiThread {
                             if (isAsciiMode) {
                                 asciiView.setFrame(frame)

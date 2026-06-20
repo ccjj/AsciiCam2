@@ -458,7 +458,7 @@ implements Camera.PreviewCallback, ShutterButton.OnShutterButtonListener {
             pixelCharsMap.put(colorType, prefValue);
         }
 
-        String colorTypeName = prefs.getString("colorType", null);
+        String colorTypeName = prefs.getString(getString(R.string.colorTypePrefId), null);
         if (colorTypeName!=null) {
             try {
                 this.colorType = AsciiConverter.ColorType.valueOf(colorTypeName);
@@ -468,6 +468,14 @@ implements Camera.PreviewCallback, ShutterButton.OnShutterButtonListener {
         if (colorType==null) {
             colorType = AsciiConverter.ColorType.ANSI_COLOR;
         }
+
+        String charSizeValue = prefs.getString(getString(R.string.charSizePrefId), "100");
+        int charSizePercent = 100;
+        try {
+            charSizePercent = Integer.parseInt(charSizeValue);
+        }
+        catch(Exception ignored) {}
+        imageRenderer.setCharacterSizePercent(charSizePercent);
 
         AsciiCamPreferences.setAutoConvertEnabled(this, prefs.getBoolean(getString(R.string.autoConvertPicturesPrefId), false));
 
@@ -479,7 +487,7 @@ implements Camera.PreviewCallback, ShutterButton.OnShutterButtonListener {
 
     void saveColorStyleToPreferences() {
         SharedPreferences.Editor editor = PreferenceManager.getDefaultSharedPreferences(getBaseContext()).edit();
-        editor.putString("colorType", colorType.name());
+        editor.putString(getString(R.string.colorTypePrefId), colorType.name());
         editor.commit();
     }
 

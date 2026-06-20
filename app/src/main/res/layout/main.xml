@@ -54,6 +54,8 @@
                 android:background="#00000000"
                 android:onClick="onClick_gotoPreferences"
                 android:scaleType="fitCenter"
+                android:contentDescription="@string/settingsButtonDescription"
+                android:tooltipText="@string/settingsButtonDescription"
                 android:src="@drawable/ic_settings_new" />
 
             <ImageButton
